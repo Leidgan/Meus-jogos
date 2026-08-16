@@ -11,6 +11,7 @@
 </head>
 <body>
 
+    <!-- O contêiner onde o emulador vai renderizar a tela do jogo e os controles -->
     <div id="game"></div>
 
     <script>
@@ -22,11 +23,12 @@
         const romFinal = jogoSelecionado ? jogoSelecionado : "jogo.sfc";
 
         // Configurações do Emulador
-        EmuJS_System = "snes";      // Mude se for outro console (ex: gba, megadrive)
-        EmuJS_Rom = romFinal;       // Carrega o jogo dinamicamente
+        EmuJS_System = "snes";      // Mude para "gba" ou "nes" se for o caso
+        EmuJS_Rom = romFinal;       // Carrega o jogo dinamicamente (.sfc)
         EmuJS_StartOnLoaded = true;
     </script>
     
+    <!-- Script correto para carregar o motor do emulador diretamente no navegador -->
     <script src="https://jsdelivr.net"></script>
 
 </body>
