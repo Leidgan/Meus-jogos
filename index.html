@@ -3,33 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mega Man X3 - SNES Online</title>
+    <title>Portal Retro NFC</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { width: 100%; height: 100%; background-color: #0b0c10; font-family: Arial, sans-serif; color: #fff; overflow: hidden; }
+        #loading-screen { display: flex; flex-direction: column; width: 100%; height: 100%; align-items: center; justify-content: center; background: #000; text-align: center; }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 50%; border-left-color: #66fcf1; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #game-container { display: none; width: 100%; height: 100%; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+        #btn-voltar { position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.8); color: #66fcf1; border: 1px solid #66fcf1; padding: 8px 15px; font-size: 12px; border-radius: 5px; cursor: pointer; z-index: 9999; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- Emulador direto e otimizado para celular com o Mega Man X3 -->
-    <iframe src="https://retrogames.cc" allowfullscreen="true"></iframe>
+    <!-- TELA DE CARREGAMENTO (SÓ APARECE ENQUANTO ABRE O JOGO DO NFC) -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <h2 id="loading-text">Iniciando Portal Retro...</h2>
+        <p style="color: #66fcf1; margin-top: 10px; font-size: 14px;">Aproxime uma tag NFC ou aguarde</p>
+    </div>
 
+    <!-- TELA DO EMULADOR -->
+    <div id="game-container">
+        <button id="btn-voltar" onclick="fecharJogo()">⬅ Sair do Jogo</button>
+        <iframe id="emulador-iframe" src="" allowfullscreen="true" scrolling="no" allow="cross-origin-isolated"></iframe>
+    </div>
+
+    <script>
+        // Função que lê os parâmetros enviados pela Tag NFC através da URL
+        function inicializarNFC() {
+            const parametros = new URLSearchParams(window.location.search);
+            const jogo = parametros.get('jogo');       // Pega o nome do jogo da URL
+            const consoleSel = parametros.get('console'); // Pega o console da URL
+
+            if (jogo && consoleSel) {
+                document.getElementById('loading-text').innerText = `Carregando Jogo...`;
+                
+                let urlFinal = '';
+                
+                // Formata o link correto com base no console gravado na Tag
+                if (consoleSel === 'ps1' || consoleSel === 'psx') {
+                    urlFinal = `https://retrogames.cc{jogo}-psx.html`;
+                } else if (consoleSel === 'psp') {
+                    urlFinal = `https://retrogames.cc{jogo}-psp.html`;
+                } else {
+                    urlFinal = `https://retrogames.cc{jogo}-${consoleSel}.html`;
+                }
+
+                // Dispara o emulador na tela imediatamente sem cliques extras
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('game-container').style.display = 'block';
+                    document.getElementById('emulador-iframe').src = urlFinal;
+                }, 1000);
+            } else {
+                // Se abrir o site sem passar o NFC, avisa para usar a tag
+                document.getElementById('loading-text').innerText = "Aguardando Tag NFC...";
+            }
+        }
+
+        function fecharJogo() {
+            document.getElementById('emulador-iframe').src = '';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "Aguardando Tag NFC...";
+            // Limpa a URL do navegador
+            window.history.pushState({}, document.title, window.location.pathname);
+        }
+
+        // Executa assim que a página abre no celular
+        window.onload = inicializarNFC;
+    </script>
 </body>
 </html>
