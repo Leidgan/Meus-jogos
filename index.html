@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Meu Emulador SNES</title>
+    <title>Jogando SNES Online</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,48 +16,10 @@
             background-color: #000;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        #menu-container {
-            position: absolute;
-            z-index: 10;
-            text-align: center;
-            color: white;
-            background: rgba(20, 20, 20, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 400px;
-        }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .file-label {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-            width: 100%;
-        }
-        .file-label:hover {
-            background-color: #0056b3;
-        }
-        input[type="file"] {
-            display: none;
         }
         #emulator-container {
             width: 100%;
             height: 100%;
-            display: none;
         }
         #game {
             width: 100%;
@@ -67,48 +29,29 @@
 </head>
 <body>
 
-    <!-- Menu Inicial para carregar o jogo -->
-    <div id="menu-container">
-        <h1>Super Nintendo Online</h1>
-        <p style="margin-bottom: 20px; color: #aaa;">Selecione seu arquivo .sfc para jogar</p>
-        <label for="rom-file" class="file-label">Escolher Jogo (.sfc)</label>
-        <input type="file" id="rom-file" accept=".sfc">
-    </div>
-
-    <!-- Container do Emulador -->
+    <!-- O emulador vai carregar diretamente aqui dentro -->
     <div id="emulator-container">
         <div id="game"></div>
     </div>
 
     <script>
-        // Configurações do EmulatorJS
+        // Configurações do EmulatorJS para carregamento automático online
         EJS_player = '#game';
         EJS_core = 'snes'; // Define o núcleo como Super Nintendo
-        EJS_pathtodata = 'https://emulatorjs.org'; // Arquivos do sistema (vêm do CDN)
-        EJS_startOnLoaded = true;
+        EJS_startOnLoaded = true; // Inicia o jogo assim que terminar de baixar
+        
+        // ATENÇÃO: Substitua 'jogo.sfc' pelo nome exato do seu arquivo que está no GitHub
+        EJS_gameUrl = 'jogo.sfc'; 
 
-        document.getElementById('rom-file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Arquivos de sistema e inicialização puxados via CDN externa
+        EJS_pathtodata = 'https://emulatorjs.org';
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                // Esconde o menu e mostra o emulador
-                document.getElementById('menu-container').style.display = 'none';
-                document.getElementById('emulator-container').style.display = 'block';
-
-                // Passa o arquivo carregado em formato binário para o emulador
-                EJS_gameData = new Uint8Array(event.target.result);
-
-                // Carrega o script principal do emulador dinamicamente
-                const script = document.createElement('script');
-                script.src = 'https://emulatorjs.orgloader.js';
-                document.body.appendChild(script);
-            };
-            
-            // Lê o arquivo .sfc selecionado pelo usuário no celular
-            reader.readAsArrayBuffer(file);
-        });
+        // Carrega o script principal do emulador de forma automática ao abrir a página
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://emulatorjs.orgloader.js';
+            document.body.appendChild(script);
+        })();
     </script>
 </body>
 </html>
