@@ -9,44 +9,48 @@
         #menu { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: white; }
         .game-btn { background: #222; color: #fff; border: 2px solid #555; padding: 15px 30px; margin: 10px; font-size: 18px; cursor: pointer; border-radius: 8px; transition: 0.2s; min-width: 250px; text-align: center; text-decoration: none; }
         .game-btn:hover { background: #444; border-color: #3b82f6; }
-        #game-container { width: 100%; height: 100%; display: none; }
+        #game-container { width: 100vw; height: 100vh; display: none; position: relative; }
+        #emulator { width: 100%; height: 100%; }
+        /* Botão para voltar ao menu */
+        .btn-voltar { position: absolute; top: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.7); color: #fff; border: 1px solid #fff; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 14px; }
+        .btn-voltar:hover { background: #fff; color: #000; }
     </style>
 </head>
 <body>
 
-    <!-- MENU DE SELEÇÃO (Aparece se nenhum jogo for escolhido) -->
+    <!-- MENU DE SELEÇÃO -->
     <div id="menu">
         <h2>Escolha um Jogo:</h2>
-        <!-- Modifique os nomes dos arquivos abaixo de acordo com as suas ROMs na pasta roms/ -->
-        <a class="game-btn" href="?legend-of-zelda-the-a-link-to-the-past-usina.sfc">Legend of Zelda the a link to the past</a>
+        <a class="game-btn" href="?jogo=legend-of-zelda-the-a-link-to-the-past-usina.sfc">Legend of Zelda (Link to the Past)</a>
         <a class="game-btn" href="?jogo=mega-man-x3.sfc">Mega Man X3</a>
         <a class="game-btn" href="?jogo=zelda.sfc">The Legend of Zelda</a>
     </div>
 
     <!-- CONTAINER DO EMULADOR -->
     <div id="game-container">
+        <a href="index.html" class="btn-voltar">⬅ Voltar ao Menu</a>
         <div id="emulator"></div>
     </div>
 
     <script>
-        // Função para ler o nome do jogo na barra de endereço da URL
         const urlParams = new URLSearchParams(window.location.search);
         const jogoSelecionado = urlParams.get('jogo');
 
         if (jogoSelecionado) {
-            // Esconde o menu e mostra o emulador
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
 
-            // Configuração do EmulatorJS
+            // CONFIGURAÇÃO DO EMULATORJS
             window.EJS_player = '#emulator';
             window.EJS_core = 'snes'; 
-            window.EJS_gameUrl = 'roms/' + jogoSelecionado; // Aponta para a pasta roms/
-            window.EJS_pathtodata = 'https://jsdelivr.net';
+            window.EJS_gameUrl = 'roms/' + jogoSelecionado; 
+            
+            // CORRIGIDO: O EmulatorJS exige uma barra no final da URL do data path
+            window.EJS_pathtodata = 'https://emulatorjs.org';
 
-            // Carrega o script do emulador dinamicamente
+            // CORRIGIDO: URL correta do script loader da CDN oficial
             const script = document.createElement('script');
-            script.src = 'https://jsdelivr.netloader.js';
+            script.src = 'https://emulatorjs.orgloader.js';
             document.body.appendChild(script);
         }
     </script>
