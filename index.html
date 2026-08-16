@@ -6,30 +6,32 @@
     <title>Meu Emulador NFC</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
-        #game { width: 100%; height: 100%; }
+        /* O EmulatorJS exige que o container tenha tamanho definido */
+        #game-container { width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
 
-    <!-- O contêiner onde o emulador vai renderizar a tela do jogo e os controles -->
-    <div id="game"></div>
+    <!-- O EmulatorJS procura obrigatoriamente por uma div vazia para injetar o emulador -->
+    <div id="game-container"></div>
 
     <script>
-        // Pega o nome do jogo que você digitar no final do link da URL
+        // Pega o nome do jogo pela URL (?jogo=nome.sfc)
         const urlParams = new URLSearchParams(window.location.search);
         const jogoSelecionado = urlParams.get('jogo');
-
-        // Se você não especificar um jogo na URL, ele tenta carregar "jogo.sfc" por padrão
         const romFinal = jogoSelecionado ? jogoSelecionado : "jogo.sfc";
 
-        // Configurações do Emulador
-        EmuJS_System = "snes";      // Mude para "gba" ou "nes" se for o caso
-        EmuJS_Rom = romFinal;       // Carrega o jogo dinamicamente (.sfc)
-        EmuJS_StartOnLoaded = true;
+        // CONFIGURAÇÕES OBRIGATÓRIAS DO EMULATORJS
+        EmuJS_CONTAINER = "game-container"; // ID exato da div acima
+        EmuJS_SYSTEM = "snes";             // Sistema em letras minúsculas
+        EmuJS_ROM = romFinal;              // Caminho do arquivo .sfc
+        
+        // Define de onde o emulador vai baixar os arquivos de sistema (CSS/JS internos)
+        EmuJS_URL = "https://jsdelivr.net"; 
     </script>
     
-    <!-- Script correto para carregar o motor do emulador diretamente no navegador -->
-    <script src="https://jsdelivr.net"></script>
+    <!-- Carrega o inicializador oficial -->
+    <script src="https://jsdelivr.netloader.js"></script>
 
 </body>
 </html>
