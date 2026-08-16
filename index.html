@@ -3,77 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Portal Retro NFC</title>
+    <title>Meu Portal Retro - Multi Consoles</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { width: 100%; height: 100%; background-color: #0b0c10; font-family: Arial, sans-serif; color: #fff; overflow: hidden; }
-        #loading-screen { display: flex; flex-direction: column; width: 100%; height: 100%; align-items: center; justify-content: center; background: #000; text-align: center; }
+        body, html { width: 100%; height: 100%; background-color: #0b0c10; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; overflow: hidden; }
+        
+        /* Menu Geral (Só aparece se entrar sem NFC) */
+        #main-container { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 15px; align-items: center; justify-content: flex-start; overflow-y: auto; }
+        h1 { font-size: 22px; color: #66fcf1; margin-bottom: 15px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+        .search-box { width: 100%; max-width: 450px; margin-bottom: 15px; }
+        input[type="text"] { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #1f2833; background-color: #1f2833; color: white; font-size: 16px; outline: none; }
+        input[type="text"]:focus { border-color: #66fcf1; }
+        .console-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 450px; margin-bottom: 15px; }
+        .tab-btn { background-color: #1f2833; color: #c5a059; border: 1px solid #c5a059; padding: 10px 5px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; text-transform: uppercase; }
+        .tab-btn.active { background-color: #66fcf1; color: #0b0c10; border-color: #66fcf1; }
+        .info-text { text-align: center; color: #85929e; font-size: 14px; max-width: 400px; margin-top: 10px; line-height: 1.4; }
+        .start-btn { background-color: #66fcf1; color: #0b0c10; border: none; padding: 14px 25px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; max-width: 450px; text-transform: uppercase; }
+        
+        /* Tela de Carregamento para o NFC */
+        #loading-screen { display: none; flex-direction: column; width: 100%; height: 100%; align-items: center; justify-content: center; background: #000; text-align: center; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 50%; border-left-color: #66fcf1; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #game-container { display: none; width: 100%; height: 100%; position: relative; }
+        
+        /* Área do Emulador */
+        #game-container { display: none; width: 100%; height: 100%; position: relative; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
         #btn-voltar { position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.8); color: #66fcf1; border: 1px solid #66fcf1; padding: 8px 15px; font-size: 12px; border-radius: 5px; cursor: pointer; z-index: 9999; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE CARREGAMENTO (SÓ APARECE ENQUANTO ABRE O JOGO DO NFC) -->
+    <!-- INTERFACE DO MENU PRINCIPAL -->
+    <div id="main-container">
+        <h1>Portal de Emulação</h1>
+        
+        <div class="search-box">
+            <input type="text" id="game-name" placeholder="Digite o nome do jogo (Ex: Mario, Sonic, Tekken)...">
+        </div>
+
+        <div class="console-tabs">
+            <button class="tab-btn active" onclick="selectConsole('snes', this)">SNES</button>
+            <button class="tab-btn" onclick="selectConsole('nes', this)">NES</button>
+            <button class="tab-btn" onclick="selectConsole('n64', this)">N64</button>
+            <button class="tab-btn" onclick="selectConsole('ps1', this)">PS1</button>
+            <button class="tab-btn" onclick="selectConsole('psp', this)">PSP</button>
+            <button class="tab-btn" onclick="selectConsole('gba', this)">GBA</button>
+        </div>
+
+        <button class="start-btn" onclick="buscarEIniciar()">Iniciar Jogo</button>
+
+        <p class="info-text">
+            Digite o nome em inglês para facilitar a busca. Exemplo: use <em>donkey kong country</em> em vez de apenas <em>donkey kong</em>.
+        </p>
+    </div>
+
+    <!-- TELA DE CARREGAMENTO (SÓ APARECE NO MODO NFC) -->
     <div id="loading-screen">
         <div class="spinner"></div>
-        <h2 id="loading-text">Iniciando Portal Retro...</h2>
-        <p style="color: #66fcf1; margin-top: 10px; font-size: 14px;">Aproxime uma tag NFC ou aguarde</p>
+        <h2>Carregando Jogo da Tag NFC...</h2>
     </div>
 
     <!-- TELA DO EMULADOR -->
     <div id="game-container">
-        <button id="btn-voltar" onclick="fecharJogo()">⬅ Sair do Jogo</button>
+        <button id="btn-voltar" onclick="voltarAoMenu()">⬅ Sair</button>
         <iframe id="emulador-iframe" src="" allowfullscreen="true" scrolling="no" allow="cross-origin-isolated"></iframe>
     </div>
 
     <script>
-        // Função que lê os parâmetros enviados pela Tag NFC através da URL
-        function inicializarNFC() {
-            const parametros = new URLSearchParams(window.location.search);
-            const jogo = parametros.get('jogo');       // Pega o nome do jogo da URL
-            const consoleSel = parametros.get('console'); // Pega o console da URL
+        let selectedConsole = 'snes';
 
-            if (jogo && consoleSel) {
-                document.getElementById('loading-text').innerText = `Carregando Jogo...`;
-                
-                let urlFinal = '';
-                
-                // Formata o link correto com base no console gravado na Tag
-                if (consoleSel === 'ps1' || consoleSel === 'psx') {
-                    urlFinal = `https://retrogames.cc{jogo}-psx.html`;
-                } else if (consoleSel === 'psp') {
-                    urlFinal = `https://retrogames.cc{jogo}-psp.html`;
-                } else {
-                    urlFinal = `https://retrogames.cc{jogo}-${consoleSel}.html`;
-                }
+        function selectConsole(consoleName, element) {
+            selectedConsole = consoleName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
 
-                // Dispara o emulador na tela imediatamente sem cliques extras
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('game-container').style.display = 'block';
-                    document.getElementById('emulador-iframe').src = urlFinal;
-                }, 1000);
+        // Função para quando o usuário busca direto pelo site
+        function buscarEIniciar() {
+            const nomeInput = document.getElementById('game-name').value.trim();
+            if (!nomeInput) {
+                alert('Por favor, digite o nome de um jogo antes de iniciar.');
+                return;
+            }
+
+            let nomeFormatado = formatarNomeJogo(nomeInput);
+            abrirIframe(nomeFormatado, selectedConsole);
+        }
+
+        // Função auxiliar para arrumar o nome do jogo padrão URL
+        function formatarNomeJogo(nome) {
+            return nome.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+                .replace(/[^a-z0-9\s-]/g, "") 
+                .replace(/\s+/g, '-');
+        }
+
+        function abrirIframe(jogo, consoleSel) {
+            let urlFinal = '';
+            if (consoleSel === 'ps1' || consoleSel === 'psx') {
+                urlFinal = `https://retrogames.cc{jogo}-psx.html`;
+            } else if (consoleSel === 'psp') {
+                urlFinal = `https://retrogames.cc{jogo}-psp.html`;
             } else {
-                // Se abrir o site sem passar o NFC, avisa para usar a tag
-                document.getElementById('loading-text').innerText = "Aguardando Tag NFC...";
+                urlFinal = `https://retrogames.cc{jogo}-${consoleSel}.html`;
+            }
+
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('emulador-iframe').src = urlFinal;
+        }
+
+        // FUNÇÃO INTELIGENTE: Verifica se veio por TAG NFC ou se entrou direto
+        function verificarEntrada() {
+            const parametros = new URLSearchParams(window.location.search);
+            const jogoNFC = parametros.get('jogo');       
+            const consoleNFC = parametros.get('console'); 
+
+            if (jogoNFC && consoleNFC) {
+                // Se veio da Tag NFC, mostra a tela de carregamento e abre direto
+                document.getElementById('main-container').style.display = 'none';
+                document.getElementById('loading-screen').style.display = 'flex';
+                
+                setTimeout(() => {
+                    abrirIframe(jogoNFC, consoleNFC);
+                }, 1200);
+            } else {
+                // Se entrou normal pelo link do GitHub, mostra o menu com a barra de busca
+                document.getElementById('main-container').style.display = 'flex';
             }
         }
 
-        function fecharJogo() {
+        function voltarAoMenu() {
             document.getElementById('emulador-iframe').src = '';
             document.getElementById('game-container').style.display = 'none';
-            document.getElementById('loading-screen').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "Aguardando Tag NFC...";
-            // Limpa a URL do navegador
+            // Limpa parâmetros da URL para não prender o celular no modo NFC
             window.history.pushState({}, document.title, window.location.pathname);
+            document.getElementById('main-container').style.display = 'flex';
         }
 
-        // Executa assim que a página abre no celular
-        window.onload = inicializarNFC;
+        window.onload = verificarEntrada;
     </script>
 </body>
 </html>
