@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogando SNES Online</title>
+    <title>Mega Man X3 - SNES Online</title>
     <style>
         * {
             box-sizing: border-box;
@@ -29,24 +29,23 @@
 </head>
 <body>
 
-    <!-- O emulador vai carregar diretamente aqui dentro -->
     <div id="emulator-container">
         <div id="game"></div>
     </div>
 
     <script>
-        // Configurações do EmulatorJS para carregamento automático online
+        // Configurações do EmulatorJS
         EJS_player = '#game';
-        EJS_core = 'snes'; // Define o núcleo como Super Nintendo
-        EJS_startOnLoaded = true; // Inicia o jogo assim que terminar de baixar
+        EJS_core = 'snes'; 
+        EJS_startOnLoaded = true; 
         
-        // ATENÇÃO: Substitua 'jogo.sfc' pelo nome exato do seu arquivo que está no GitHub
+        // Link direto para o arquivo na raiz do seu repositório
         EJS_gameUrl = 'Mega Man X3 (USA).sfc'; 
 
-        // Arquivos de sistema e inicialização puxados via CDN externa
+        // Arquivos do sistema carregados via CDN externa estável
         EJS_pathtodata = 'https://emulatorjs.org';
 
-        // Carrega o script principal do emulador de forma automática ao abrir a página
+        // Inicialização automática do emulador
         (function() {
             const script = document.createElement('script');
             script.src = 'https://emulatorjs.orgloader.js';
